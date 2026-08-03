@@ -21,39 +21,35 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, message: 'Invalid recipient.' });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const fizEmail = process.env.FIZ_EMAIL;
-  const risEmail = process.env.RIS_EMAIL;
+  const keyToRis = process.env.WEB3FORMS_KEY_TO_RIS;
+  const keyToFiz = process.env.WEB3FORMS_KEY_TO_FIZ;
+  const accessKey = recipient === 'ris' ? keyToRis : keyToFiz;
 
-  if (!apiKey || !fizEmail || !risEmail) {
+  if (!accessKey) {
     return res.status(500).json({
       success: false,
       message: 'Messaging is not configured on the server yet.',
     });
   }
 
-  const to = recipient === 'ris' ? risEmail : fizEmail;
   const sender = from === 'Ris' ? 'Ris' : 'Fiz';
   const subject = sender === 'Ris' ? 'A message from Ris' : 'A message from Fiz';
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'RisFiz <onboarding@resend.dev>',
-        to: [to],
+        access_key: accessKey,
         subject,
-        text: String(message).trim(),
+        message: String(message).trim(),
+        from_name: sender,
       }),
     });
 
     const data = await response.json().catch(() => ({}));
 
-    if (!response.ok) {
+    if (!response.ok || !data.success) {
       return res.status(500).json({
         success: false,
         message: data.message || 'Email could not be sent.',

@@ -22,26 +22,27 @@ Everything personal lives in **`memories.json`** and **`assets/images/`**.
 
 ### 1. Messages (email setup on Vercel)
 
-Messages no longer use FormSubmit (antivirus often blocks it). They go through **your own site** at `/api/send`, powered by [Resend](https://resend.com).
+Messages go through **your own site** at `/api/send`, using [Web3Forms](https://web3forms.com) on the server (no email in the URL — Kaspersky-friendly).
 
-**One-time setup:**
+**One-time setup (~5 min):**
 
-1. Create a free account at [resend.com](https://resend.com) and copy your **API key**
+1. Go to [web3forms.com](https://web3forms.com) and create **two forms**:
+   - Form 1: recipient **`rismaditiarindaa@gmail.com`** (for Fiz → Ris) → copy its **Access Key**
+   - Form 2: recipient **`aimjetkhalifa10@gmail.com`** (for Ris → Fiz) → copy its **Access Key**
+
 2. In Vercel → your project → **Settings → Environment Variables**, add:
 
 | Name | Value |
 |------|-------|
-| `RESEND_API_KEY` | your Resend API key |
-| `FIZ_EMAIL` | `aimjetkhalifa10@gmail.com` |
-| `RIS_EMAIL` | `rismaditiarindaa@gmail.com` |
+| `WEB3FORMS_KEY_TO_RIS` | access key from form 1 (delivers to Ris) |
+| `WEB3FORMS_KEY_TO_FIZ` | access key from form 2 (delivers to Fiz) |
 
-3. **Redeploy** the site (Deployments → … → Redeploy)
+3. **Redeploy** the site
 
 - **Fiz** green box → sends to Ris
 - **Ris** yellow box → sends to Fiz
-- No third-party URL with emails in it — Kaspersky should not block this
 
-Emails in `memories.json` are kept for your records; delivery uses the Vercel env vars above.
+You can remove old `RESEND_API_KEY` / `FIZ_EMAIL` / `RIS_EMAIL` vars if you added them — they're no longer used.
 
 ### 2. Add Memories (plant branches)
 
@@ -72,7 +73,7 @@ Add `assets/audio/ambient.mp3` — a music button appears after opening the enve
 
 1. Push this folder to a GitHub repo
 2. Import the repo at [vercel.com](https://vercel.com)
-3. Add the environment variables above (for messages)
+3. Add the Web3Forms environment variables above (for messages)
 4. Deploy — Vercel runs the static site **and** the `/api/send` function
 5. Use an unguessable URL and share only with each other
 
