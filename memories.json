@@ -1,0 +1,66 @@
+{
+  "site": {
+    "title": "RisFiz",
+    "relationshipStart": "2024-11-01",
+    "fiz": {
+      "name": "Mustafiz Ahmed",
+      "nickname": "Fiz",
+      "birthday": "2002-10-17",
+      "city": "Guwahati",
+      "state": "Assam",
+      "country": "India",
+      "email": "aimjetkhalifa10@gmail.com"
+    },
+    "ris": {
+      "name": "Rismaditi Arinda",
+      "nickname": "Ris",
+      "birthday": "2002-07-08",
+      "city": "Bontang",
+      "country": "Indonesia",
+      "email": "rismaditiarindaa@gmail.com"
+    }
+  },
+  "roots": {
+    "title_en": "Before We Began",
+    "title_id": "Sebelum Kita Mulai",
+    "text_en": "Every plant has roots beneath the soil — moments that grew quietly before 1 November 2024, when we finally chose each other.",
+    "text_id": "Setiap tanaman punya akar di bawah tanah — momen-momen yang tumbuh diam-diam sebelum 1 November 2024, ketika kita akhirnya memilih satu sama lain."
+  },
+  "memories": [
+    {
+      "date": "2026",
+      "sortDate": "2026-01-01",
+      "image": "assets/images/memory-1.svg",
+      "caption_en": "A recent moment — replace with your latest photo and memory.",
+      "caption_id": "Momen terbaru — ganti dengan foto dan kenangan terbarumu."
+    },
+    {
+      "date": "2025",
+      "sortDate": "2025-06-01",
+      "image": "assets/images/memory-2.svg",
+      "caption_en": "A memory from our journey — miles apart, hearts together.",
+      "caption_id": "Kenangan dari perjalanan kita — terpisah jarak, hati bersatu."
+    },
+    {
+      "date": "1 November 2024",
+      "sortDate": "2024-11-01",
+      "image": "assets/images/memory-3.svg",
+      "caption_en": "The day we began — two hearts, miles apart, choosing each other anyway.",
+      "caption_id": "Hari kita mulai — dua hati, terpisah jarak, tetap memilih satu sama lain."
+    },
+    {
+      "date": "The buildup",
+      "sortDate": "2024-08-01",
+      "image": "assets/images/memory-4.svg",
+      "caption_en": "The months before — conversations, laughs, and a feeling that kept growing.",
+      "caption_id": "Bulan-bulan sebelumnya — percakapan, tawa, dan perasaan yang terus tumbuh."
+    },
+    {
+      "date": "Where it started",
+      "sortDate": "2024-05-01",
+      "image": "assets/images/memory-5.svg",
+      "caption_en": "Add your earliest memory here — the first hello, the first smile.",
+      "caption_id": "Tambahkan kenangan paling awal di sini — sapaan pertama, senyum pertama."
+    }
+  ]
+}
