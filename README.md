@@ -20,29 +20,18 @@ Visit `http://localhost:8080`
 
 Everything personal lives in **`memories.json`** and **`assets/images/`**.
 
-### 1. Messages (email setup on Vercel)
+### 1. Messages (FormSubmit)
 
-Messages go through **your own site** at `/api/send`, using [Web3Forms](https://web3forms.com) on the server (no email in the URL — Kaspersky-friendly).
+Messages use [FormSubmit](https://formsubmit.co) — no API keys, no monthly limit, no extra setup.
 
-**One-time setup (~5 min):**
-
-1. Go to [web3forms.com](https://web3forms.com) and create **two forms**:
-   - Form 1: recipient **`rismaditiarindaa@gmail.com`** (for Fiz → Ris) → copy its **Access Key**
-   - Form 2: recipient **`aimjetkhalifa10@gmail.com`** (for Ris → Fiz) → copy its **Access Key**
-
-2. In Vercel → your project → **Settings → Environment Variables**, add:
-
-| Name | Value |
-|------|-------|
-| `WEB3FORMS_KEY_TO_RIS` | access key from form 1 (delivers to Ris) |
-| `WEB3FORMS_KEY_TO_FIZ` | access key from form 2 (delivers to Fiz) |
-
-3. **Redeploy** the site
+Recipient emails live in `memories.json` under `site.fiz.email` and `site.ris.email`:
 
 - **Fiz** green box → sends to Ris
 - **Ris** yellow box → sends to Fiz
 
-You can remove old `RESEND_API_KEY` / `FIZ_EMAIL` / `RIS_EMAIL` vars if you added them — they're no longer used.
+The first time someone sends to an address, FormSubmit emails that person a one-time activation link — click it once and you're set.
+
+**If Kaspersky blocks the confirmation:** the message often still delivers. The site shows a yellow warning instead of an error so you don't click Send again by mistake. You can whitelist `formsubmit.co` in Kaspersky if you want a clean success message.
 
 ### 2. Add Memories (plant branches)
 
@@ -73,9 +62,8 @@ Add `assets/audio/ambient.mp3` — a music button appears after opening the enve
 
 1. Push this folder to a GitHub repo
 2. Import the repo at [vercel.com](https://vercel.com)
-3. Add the Web3Forms environment variables above (for messages)
-4. Deploy — Vercel runs the static site **and** the `/api/send` function
-5. Use an unguessable URL and share only with each other
+3. Deploy — static site only; messages work via FormSubmit
+4. Use an unguessable URL and share only with each other
 
 ## Site Flow
 
@@ -88,7 +76,6 @@ Add `assets/audio/ambient.mp3` — a music button appears after opening the enve
 ## File Structure
 
 ```
-├── api/send.js         ← sends messages (Vercel serverless)
 ├── index.html
 ├── memories.json       ← edit this
 ├── robots.txt          ← blocks search engines

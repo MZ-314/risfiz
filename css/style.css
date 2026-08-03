@@ -716,6 +716,7 @@ body {
 }
 
 .form-status-success { color: var(--green-mid); }
+.form-status-warning { color: #b8860b; }
 .form-status-error { color: #c62828; }
 
 /* Footer */

@@ -619,21 +619,23 @@
     if (textId) textId.textContent = roots.text_id || '';
   }
 
-  // --- Messages (via your own Vercel /api/send — not FormSubmit) ---
+  // --- Messages (FormSubmit) ---
   function initForms() {
     const fizForm = document.getElementById('form-fiz');
     const risForm = document.getElementById('form-ris');
+    const fizEmail = siteData?.site?.fiz?.email;
+    const risEmail = siteData?.site?.ris?.email;
 
-    if (fizForm) {
+    if (fizForm && risEmail) {
       fizForm.addEventListener('submit', handleFormSubmit('form-fiz-status', fizForm, {
-        recipient: 'ris',
+        action: `https://formsubmit.co/ajax/${encodeURIComponent(risEmail)}`,
         from: 'Fiz',
       }));
     }
 
-    if (risForm) {
+    if (risForm && fizEmail) {
       risForm.addEventListener('submit', handleFormSubmit('form-ris-status', risForm, {
-        recipient: 'fiz',
+        action: `https://formsubmit.co/ajax/${encodeURIComponent(fizEmail)}`,
         from: 'Ris',
       }));
     }
@@ -663,40 +665,35 @@
       btn.disabled = true;
       btn.textContent = 'Sending...';
 
+      const formData = new FormData(form);
+      formData.set('message', messageEl.value.trim());
+      formData.set('name', meta.from);
+      formData.set('_subject', `A message from ${meta.from}`);
+      formData.set('_template', 'table');
+      formData.set('_captcha', 'false');
+
       try {
-        const res = await fetch('/api/send', {
+        const res = await fetch(meta.action, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipient: meta.recipient,
-            from: meta.from,
-            message: messageEl.value,
-            _honey: honey ? honey.value : '',
-          }),
+          body: formData,
+          headers: { Accept: 'application/json' },
         });
 
         const data = await res.json().catch(() => ({}));
 
-        if (res.ok && data.success) {
+        if (res.ok) {
           showStatus(status, "Sent! They'll get it in their inbox.", 'success');
           form.reset();
-        } else if (res.status === 404) {
-          showStatus(status, 'Messages work on the live site after Vercel deploy.', 'error');
         } else {
           showStatus(status, data.message || 'Something went wrong. Try again?', 'error');
         }
       } catch {
-        const local =
-          location.hostname === 'localhost' ||
-          location.hostname === '127.0.0.1' ||
-          location.protocol === 'file:';
         showStatus(
           status,
-          local
-            ? 'Messages only work on the live RisFiz site (not local preview).'
-            : 'Could not send. Try again in a moment.',
-          'error'
+          'Your message was likely sent. If Kaspersky blocked the confirmation, wait before sending again — only retry if they did not get it.',
+          'warning'
         );
+        form.reset();
       }
 
       sending = false;
@@ -710,7 +707,8 @@
     el.textContent = text;
     el.className = `form-status form-status-${type}`;
     el.classList.remove('hidden');
-    setTimeout(() => el.classList.add('hidden'), 5000);
+    const duration = type === 'warning' ? 12000 : 5000;
+    setTimeout(() => el.classList.add('hidden'), duration);
   }
 
   // --- Music ---
