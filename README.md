@@ -67,8 +67,8 @@ Add `assets/audio/ambient.mp3` — a music button appears after opening the enve
 
 ## Site Flow
 
-1. **Tap the envelope** — wax seal with F+R
-2. **Hero** — Fiz & Ris, days together, Kohima ↔ Bontang
+1. **Tap the envelope** — wax seal with RisFiz
+2. **Hero** — Fiz & Ris, days together, Guwahati ↔ Bontang
 3. **Our Plant** — scroll down through memories (newest → oldest)
 4. **Roots** — the story before 1 November 2024
 5. **Messages** — green box (Fiz → Ris), yellow box (Ris → Fiz)

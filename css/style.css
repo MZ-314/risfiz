@@ -70,6 +70,7 @@ body {
   opacity: var(--opacity, 0.2);
   transform: rotate(var(--rot, 0deg));
   will-change: transform;
+  transition: none;
 }
 
 .bg-leaf svg {

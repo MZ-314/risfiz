@@ -29,7 +29,7 @@
 
   const LEAF_MINI = 'M20 4 C8 6 2 16 3 26 C4 36 12 46 20 48 C28 46 36 36 37 26 C38 16 32 6 20 4 Z';
 
-  // --- Background leaves ---
+  // --- Background leaves (pond drift + path-parting cursor) ---
   function initBgLeaves() {
     const container = document.getElementById('bg-leaves');
     if (!container) return;
@@ -45,12 +45,15 @@
       const greens = ['#4a7c59', '#3a6b50', '#5a9c6a', '#2f5240'];
       const fill = greens[Math.floor(Math.random() * greens.length)];
 
-      leaf.style.left = Math.random() * 100 + '%';
-      leaf.style.top = Math.random() * 100 + '%';
       leaf.style.width = size + 'px';
       leaf.style.height = size * 1.3 + 'px';
       leaf.style.setProperty('--rot', rot + 'deg');
       leaf.style.setProperty('--opacity', opacity);
+
+      if (prefersReducedMotion) {
+        leaf.style.left = Math.random() * 100 + '%';
+        leaf.style.top = Math.random() * 100 + '%';
+      }
 
       leaf.innerHTML = `
         <div class="bg-leaf-inner">
@@ -65,7 +68,9 @@
       container.appendChild(leaf);
     }
 
-    initLeafInteraction();
+    if (!prefersReducedMotion) {
+      initLeafInteraction();
+    }
   }
 
   function initLeafInteraction() {
@@ -75,118 +80,152 @@
     const leaves = Array.from(container.querySelectorAll('.bg-leaf'));
     const state = new Map();
 
-    leaves.forEach((leaf) => {
-      const inner = leaf.querySelector('.bg-leaf-inner');
-      state.set(leaf, { ox: 0, oy: 0, vx: 0, vy: 0, rot: 0, inner });
-    });
+    const DRIFT_SPEED = 0.04;
+    const PATH_HALF_WIDTH = 62;
+    const PART_PUSH = 2.1;
+    const PUSH_DECAY = 0.988;
+    const MARGIN = 60;
 
-    let mouseX = -9999;
-    let mouseY = -9999;
     let prevMX = -9999;
     let prevMY = -9999;
-    let loopId = null;
 
-    const STICK_RADIUS = 95;
-    const PUSH = 3.2;
-    const WAKE = 2.4;
-    const SPRING = 0.038;
-    const DAMPING = 0.86;
-    const MAX_OFFSET = 70;
-
-    function restCenter(leaf) {
-      const s = state.get(leaf);
-      s.restCx = leaf.offsetLeft + leaf.offsetWidth / 2;
-      s.restCy = leaf.offsetTop + leaf.offsetHeight / 2;
+    function viewport() {
+      return { w: window.innerWidth, h: window.innerHeight };
     }
 
-    function disturb(mx, my, mvx, mvy) {
-      const speed = Math.hypot(mvx, mvy);
-
-      leaves.forEach((leaf) => {
-        const s = state.get(leaf);
-        const cx = s.restCx + s.ox;
-        const cy = s.restCy + s.oy;
-        const dx = cx - mx;
-        const dy = cy - my;
-        const dist = Math.hypot(dx, dy);
-
-        if (dist >= STICK_RADIUS || dist < 1) return;
-
-        const falloff = 1 - dist / STICK_RADIUS;
-        const strength = falloff * falloff;
-        const nx = dx / dist;
-        const ny = dy / dist;
-
-        s.vx += nx * PUSH * strength;
-        s.vy += ny * PUSH * strength;
-
-        if (speed > 0.4) {
-          const wake = WAKE * strength * Math.min(speed * 0.12, 10);
-          const mvnx = mvx / speed;
-          const mvny = mvy / speed;
-          const px = -mvny;
-          const py = mvnx;
-          const side = Math.sign(dx * px + dy * py) || 1;
-          s.vx += px * side * wake;
-          s.vy += py * side * wake;
-          s.vx += mvnx * wake * 0.35;
-          s.vy += mvny * wake * 0.35;
-        }
-      });
+    function pickTarget(x, y, w, h) {
+      let tx;
+      let ty;
+      let tries = 0;
+      do {
+        tx = MARGIN + Math.random() * (w - MARGIN * 2);
+        ty = MARGIN + Math.random() * (h - MARGIN * 2);
+        tries++;
+      } while (Math.hypot(tx - x, ty - y) < Math.min(w, h) * 0.38 && tries < 12);
+      return { tx, ty };
     }
+
+    function aimTrajectory(s, w, h) {
+      const dist = Math.hypot(s.targetX - s.x, s.targetY - s.y) || 1;
+      const speed = DRIFT_SPEED + Math.random() * 0.025;
+      s.driftVx = ((s.targetX - s.x) / dist) * speed;
+      s.driftVy = ((s.targetY - s.y) / dist) * speed;
+    }
+
+    function spawnLeaf(s, w, h) {
+      s.x = MARGIN + Math.random() * (w - MARGIN * 2);
+      s.y = MARGIN + Math.random() * (h - MARGIN * 2);
+      const target = pickTarget(s.x, s.y, w, h);
+      s.targetX = target.tx;
+      s.targetY = target.ty;
+      aimTrajectory(s, w, h);
+    }
+
+    function wrapLeaf(s, w, h, leafW, leafH) {
+      if (s.x < -leafW) s.x = w + leafW * 0.5;
+      if (s.x > w + leafW) s.x = -leafW * 0.5;
+      if (s.y < -leafH) s.y = h + leafH * 0.5;
+      if (s.y > h + leafH) s.y = -leafH * 0.5;
+    }
+
+    function partAlongPath(s, lx, ly, x0, y0, x1, y1) {
+      const dx = x1 - x0;
+      const dy = y1 - y0;
+      const lenSq = dx * dx + dy * dy;
+      if (lenSq < 9) return;
+
+      let t = ((lx - x0) * dx + (ly - y0) * dy) / lenSq;
+      t = Math.max(0, Math.min(1, t));
+      const cx = x0 + t * dx;
+      const cy = y0 + t * dy;
+
+      const px = lx - cx;
+      const py = ly - cy;
+      const perpDist = Math.hypot(px, py);
+      if (perpDist > PATH_HALF_WIDTH || perpDist < 0.5) return;
+
+      const falloff = (1 - perpDist / PATH_HALF_WIDTH) ** 1.4;
+      const segLen = Math.sqrt(lenSq);
+      const strength = PART_PUSH * falloff * Math.min(segLen / 14, 2.2);
+
+      s.pushVx += (px / perpDist) * strength;
+      s.pushVy += (py / perpDist) * strength;
+    }
+
+    leaves.forEach((leaf) => {
+      const inner = leaf.querySelector('.bg-leaf-inner');
+      const { w, h } = viewport();
+      const s = {
+        x: 0,
+        y: 0,
+        targetX: 0,
+        targetY: 0,
+        driftVx: 0,
+        driftVy: 0,
+        pushVx: 0,
+        pushVy: 0,
+        rot: 0,
+        inner,
+      };
+      spawnLeaf(s, w, h);
+      state.set(leaf, s);
+      leaf.style.left = s.x + 'px';
+      leaf.style.top = s.y + 'px';
+    });
 
     function tick() {
-      loopId = requestAnimationFrame(tick);
+      requestAnimationFrame(tick);
+
+      const { w, h } = viewport();
 
       leaves.forEach((leaf) => {
         const s = state.get(leaf);
+        const leafW = leaf.offsetWidth;
+        const leafH = leaf.offsetHeight;
 
-        s.vx += -s.ox * SPRING;
-        s.vy += -s.oy * SPRING;
-        s.ox += s.vx;
-        s.oy += s.vy;
-        s.vx *= DAMPING;
-        s.vy *= DAMPING;
+        s.x += s.driftVx;
+        s.y += s.driftVy;
 
-        const mag = Math.hypot(s.ox, s.oy);
-        if (mag > MAX_OFFSET) {
-          s.ox = (s.ox / mag) * MAX_OFFSET;
-          s.oy = (s.oy / mag) * MAX_OFFSET;
+        s.pushVx *= PUSH_DECAY;
+        s.pushVy *= PUSH_DECAY;
+        s.x += s.pushVx;
+        s.y += s.pushVy;
+
+        if (Math.hypot(s.x - s.targetX, s.y - s.targetY) < 48) {
+          const target = pickTarget(s.x, s.y, w, h);
+          s.targetX = target.tx;
+          s.targetY = target.ty;
+          aimTrajectory(s, w, h);
         }
 
-        if (Math.abs(s.ox) < 0.05 && Math.abs(s.oy) < 0.05 && Math.hypot(s.vx, s.vy) < 0.05) {
-          s.ox = s.oy = s.vx = s.vy = 0;
-        }
+        wrapLeaf(s, w, h, leafW, leafH);
 
-        s.rot += (-s.rot + s.vx * 1.1) * 0.12;
-        s.inner.style.transform =
-          `rotate(calc(var(--rot) + ${s.rot}deg)) translate(${s.ox}px, ${s.oy}px)`;
+        leaf.style.left = s.x + 'px';
+        leaf.style.top = s.y + 'px';
+
+        s.rot += (s.pushVx - s.pushVy) * 0.08;
+        s.rot *= 0.97;
+        s.inner.style.transform = `rotate(calc(var(--rot) + ${s.rot}deg))`;
       });
     }
 
     function onPointerMove(x, y) {
-      const mvx = x - prevMX;
-      const mvy = y - prevMY;
-      mouseX = x;
-      mouseY = y;
-
       if (prevMX > -9000) {
-        disturb(x, y, mvx, mvy);
+        const segLen = Math.hypot(x - prevMX, y - prevMY);
+        if (segLen > 2) {
+          leaves.forEach((leaf) => {
+            const s = state.get(leaf);
+            const lx = s.x + leaf.offsetWidth * 0.5;
+            const ly = s.y + leaf.offsetHeight * 0.5;
+            partAlongPath(s, lx, ly, prevMX, prevMY, x, y);
+          });
+        }
       }
-
       prevMX = x;
       prevMY = y;
     }
 
-    function cacheAll() {
-      leaves.forEach(restCenter);
-    }
-
-    if (!prefersReducedMotion) {
-      cacheAll();
-      loopId = requestAnimationFrame(tick);
-      window.addEventListener('resize', debounce(cacheAll, 200));
-    }
+    requestAnimationFrame(tick);
 
     window.addEventListener(
       'mousemove',
@@ -198,10 +237,7 @@
       'touchstart',
       (e) => {
         const t = e.touches[0];
-        if (t) {
-          prevMX = t.clientX;
-          prevMY = t.clientY;
-        }
+        if (t) onPointerMove(t.clientX, t.clientY);
       },
       { passive: true }
     );
@@ -216,8 +252,12 @@
     );
 
     document.addEventListener('mouseleave', () => {
-      prevMX = prevMY = mouseX = mouseY = -9999;
+      prevMX = prevMY = -9999;
     });
+
+    window.addEventListener('touchend', () => {
+      prevMX = prevMY = -9999;
+    }, { passive: true });
   }
 
   // --- Envelope ---
