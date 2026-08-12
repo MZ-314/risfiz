@@ -15,7 +15,6 @@
     },
     memories: [
       { date: '2026', sortDate: '2026-01-01', image: 'assets/images/memory-1.png', caption_en: 'A recent moment.', caption_id: 'Momen terbaru.' },
-      { date: '1 November 2024', sortDate: '2024-11-01', image: 'assets/images/memory-3.svg', caption_en: 'The day we began.', caption_id: 'Hari kita mulai.' },
     ],
   };
 
@@ -705,11 +704,6 @@
         <linearGradient id="branchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#3a6b50"/>
           <stop offset="100%" stop-color="#4a7c59"/>
-        </linearGradient>
-        <linearGradient id="rootGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#2f5240"/>
-          <stop offset="40%" stop-color="#4a3f35"/>
-          <stop offset="100%" stop-color="#3a3228"/>
         </linearGradient>
       </defs>
       <path class="vine-shadow" d="${vineD}" fill="none" stroke="#1a2e22" stroke-width="18" stroke-linecap="round" opacity="0.12"/>

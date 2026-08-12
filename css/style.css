@@ -298,26 +298,6 @@ body {
 .hero-ris { color: var(--yellow-dark); }
 .hero-fiz { color: var(--green); }
 
-.hero-fullnames {
-  font-size: 0.95rem;
-  color: var(--text-soft);
-  margin-bottom: 0.5rem;
-}
-
-.hero-subtitle-id {
-  font-size: clamp(0.95rem, 3vw, 1.1rem);
-  color: var(--text-muted);
-  font-style: italic;
-  margin-bottom: 1.25rem;
-}
-
-.hero-since {
-  font-size: 0.85rem;
-  color: var(--green-mid);
-  letter-spacing: 0.08em;
-  font-weight: 600;
-}
-
 .hero-days {
   font-family: var(--font-display);
   font-size: clamp(1.25rem, 4vw, 1.75rem);
@@ -331,24 +311,6 @@ body {
   color: var(--text-muted);
   margin-top: 0.75rem;
   letter-spacing: 0.03em;
-}
-
-.scroll-cue {
-  margin-top: 3rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  color: var(--green-mid);
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  animation: bounce-cue 2s ease-in-out infinite;
-}
-
-@keyframes bounce-cue {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(6px); }
 }
 
 /* Plant Timeline */

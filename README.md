@@ -47,16 +47,8 @@ Each memory becomes a branch on the growing plant. Scroll down to walk back thro
 }
 ```
 
-- **`sortDate`** controls order (newest at top, oldest at bottom/roots)
-- Add photos to `assets/images/` and reference them in `"image"`
-
-### 3. Edit the Roots Section
-
-The bottom of the plant is "Before We Began" — edit the `roots` section in `memories.json` for your buildup story.
-
-### 4. Optional Background Music
-
-Add `assets/audio/ambient.mp3` — a music button appears after opening the envelope.
+- **`sortDate`** controls order (newest at top, oldest at bottom near the roots)
+- Add square photos (1:1) to `assets/images/` and reference them in `"image"`
 
 ## Deploy on Vercel
 
@@ -68,10 +60,9 @@ Add `assets/audio/ambient.mp3` — a music button appears after opening the enve
 ## Site Flow
 
 1. **Tap the envelope** — wax seal with RisFiz
-2. **Hero** — Fiz & Ris, days together, Guwahati ↔ Bontang
+2. **Hero** — RisFiz, days together, Guwahati ↔ Bontang
 3. **Our Plant** — scroll down through memories (newest → oldest)
-4. **Roots** — the story before 1 November 2024
-5. **Messages** — green box (Fiz → Ris), yellow box (Ris → Fiz)
+4. **Messages** — green box (Fiz → Ris), yellow box (Ris → Fiz)
 
 ## File Structure
 
@@ -82,8 +73,7 @@ Add `assets/audio/ambient.mp3` — a music button appears after opening the enve
 ├── css/style.css
 ├── js/main.js
 └── assets/
-    ├── images/         ← your photos
-    └── audio/          ← optional ambient.mp3
+    └── images/         ← your photos (1:1 square)
 ```
 
 ## Privacy
