@@ -263,7 +263,6 @@
     const envelope = document.getElementById('envelope');
     const main = document.getElementById('main-content');
     const nav = document.getElementById('site-nav');
-    const musicToggle = document.getElementById('music-toggle');
     let opened = false;
 
     function openEnvelope() {
@@ -275,7 +274,6 @@
         screen.classList.add('opening');
         main.classList.remove('hidden');
         nav.classList.remove('hidden');
-        musicToggle.classList.remove('hidden');
 
         setTimeout(() => {
           screen.style.display = 'none';
@@ -839,36 +837,6 @@
     setTimeout(() => el.classList.add('hidden'), duration);
   }
 
-  // --- Music ---
-  function initMusic() {
-    const toggle = document.getElementById('music-toggle');
-    const audio = document.getElementById('ambient-audio');
-    if (!toggle || !audio) return;
-
-    toggle.classList.add('muted');
-
-    toggle.addEventListener('click', async () => {
-      try {
-        if (audio.paused) {
-          await audio.play();
-          toggle.classList.remove('muted');
-          toggle.classList.add('playing');
-        } else {
-          audio.pause();
-          toggle.classList.add('muted');
-          toggle.classList.remove('playing');
-        }
-      } catch {
-        toggle.classList.add('muted');
-        toggle.classList.remove('playing');
-      }
-    });
-
-    audio.addEventListener('error', () => {
-      toggle.style.display = 'none';
-    });
-  }
-
   // --- Parallax hero ---
   function initParallax() {
     if (prefersReducedMotion) return;
@@ -994,7 +962,6 @@
     initEnvelope();
     initReveal();
     loadData();
-    initMusic();
     initParallax();
     initNav();
   });

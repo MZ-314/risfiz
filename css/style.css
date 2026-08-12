@@ -630,37 +630,6 @@ body {
 .form-status-warning { color: #b8860b; }
 .form-status-error { color: #c62828; }
 
-/* Music toggle */
-.music-toggle {
-  position: fixed;
-  bottom: calc(1.25rem + var(--safe-bottom));
-  right: calc(1.25rem + var(--safe-right));
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--card);
-  border: 1px solid rgba(36, 62, 46, 0.15);
-  color: var(--green);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px var(--shadow);
-  z-index: 50;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.music-toggle:active { transform: scale(0.92); }
-
-.music-toggle.playing {
-  background: var(--green);
-  color: var(--yellow);
-}
-
-.music-toggle .icon-music-off { display: none; }
-.music-toggle.muted .icon-music-on { display: none; }
-.music-toggle.muted .icon-music-off { display: block; }
-
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
