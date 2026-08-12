@@ -4,6 +4,7 @@
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let siteData = null;
+  let syncNavActive = () => {};
 
   const FALLBACK_DATA = {
     site: {
@@ -12,20 +13,16 @@
       fiz: { name: 'Mustafiz Ahmed', nickname: 'Fiz', city: 'Guwahati', state: 'Assam', country: 'India', email: 'aimjetkhalifa10@gmail.com' },
       ris: { name: 'Rismaditi Arinda', nickname: 'Ris', city: 'Bontang', country: 'Indonesia', email: 'rismaditiarindaa@gmail.com' },
     },
-    roots: {
-      title_en: 'Before We Began',
-      title_id: 'Sebelum Kita Mulai',
-      text_en: 'Every plant has roots beneath the soil — moments that grew quietly before 1 November 2024.',
-      text_id: 'Setiap tanaman punya akar di bawah tanah — momen-momen yang tumbuh diam-diam sebelum 1 November 2024.',
-    },
     memories: [
-      { date: '2026', sortDate: '2026-01-01', image: 'assets/images/memory-1.svg', caption_en: 'A recent moment.', caption_id: 'Momen terbaru.' },
+      { date: '2026', sortDate: '2026-01-01', image: 'assets/images/memory-1.png', caption_en: 'A recent moment.', caption_id: 'Momen terbaru.' },
       { date: '1 November 2024', sortDate: '2024-11-01', image: 'assets/images/memory-3.svg', caption_en: 'The day we began.', caption_id: 'Hari kita mulai.' },
     ],
   };
 
   const LEAF_OUTER = 'M140 10 C50 22 15 100 20 185 C25 265 70 350 140 355 C210 350 255 265 260 185 C265 100 230 22 140 10 Z';
   const LEAF_INNER = 'M140 36 C68 46 38 108 42 178 C46 242 78 308 140 312 C202 308 234 242 238 178 C242 108 212 46 140 36 Z';
+  // 1:1 photo area centered inside the leaf (viewBox 280×360)
+  const LEAF_PHOTO = { x: 46, y: 84, size: 188 };
 
   const LEAF_MINI = 'M20 4 C8 6 2 16 3 26 C4 36 12 46 20 48 C28 46 36 36 37 26 C38 16 32 6 20 4 Z';
 
@@ -282,10 +279,11 @@
 
         setTimeout(() => {
           screen.style.display = 'none';
-          document.getElementById('hero').scrollIntoView({ behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
           refreshPlantVine();
-        }, 800);
-      }, 1200);
+          syncNavActive();
+        }, 650);
+      }, 420);
     }
 
     envelope.addEventListener('click', openEnvelope);
@@ -321,25 +319,16 @@
     }
     renderSiteInfo();
     renderPlant();
-    renderRoots();
     initForms();
+    syncNavActive();
+    setTimeout(syncNavActive, 300);
+    setTimeout(syncNavActive, 1000);
   }
 
   // --- Site info ---
   function renderSiteInfo() {
     const site = siteData?.site;
     if (!site) return;
-
-    const fullnames = document.getElementById('hero-fullnames');
-    if (fullnames && site.fiz && site.ris) {
-      fullnames.textContent = `${site.fiz.name} & ${site.ris.name}`;
-    }
-
-    const since = document.getElementById('hero-since');
-    if (since && site.relationshipStart) {
-      const d = new Date(site.relationshipStart + 'T00:00:00');
-      since.textContent = `Since ${formatDate(d)}`;
-    }
 
     const daysEl = document.getElementById('hero-days');
     if (daysEl && site.relationshipStart) {
@@ -357,21 +346,14 @@
       dist.textContent = `${fizLoc}  ↔  ${site.ris.city}, ${site.ris.country}`;
     }
 
-    const footer = document.getElementById('footer-names');
-    if (footer) {
-      footer.textContent = `${site.title || 'RisFiz'} · Since 1 November 2024`;
-    }
-
     document.title = site.title || 'RisFiz';
-  }
-
-  function formatDate(date) {
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   function giantLeafHtml(mem, i) {
     const clipId = `leafClip${i}`;
+    const squareClipId = `leafSquare${i}`;
     const img = escapeHtml(mem.image);
+    const { x, y, size } = LEAF_PHOTO;
     return `
       <div class="giant-leaf">
         <div class="node-anchor" aria-hidden="true"></div>
@@ -380,16 +362,23 @@
             <clipPath id="${clipId}">
               <path d="${LEAF_INNER}"/>
             </clipPath>
+            <clipPath id="${squareClipId}">
+              <rect x="${x}" y="${y}" width="${size}" height="${size}"/>
+            </clipPath>
           </defs>
           <path class="leaf-body" d="${LEAF_OUTER}" fill="#4a7c59" stroke="#243E2E" stroke-width="2.5"/>
-          <image class="leaf-photo" href="${img}" x="40" y="34" width="200" height="276"
-            preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})"/>
+          <g clip-path="url(#${clipId})">
+            <g clip-path="url(#${squareClipId})">
+              <image class="leaf-photo" href="${img}" x="${x}" y="${y}" width="${size}" height="${size}"
+                preserveAspectRatio="xMidYMid meet"/>
+            </g>
+          </g>
           <path d="${LEAF_OUTER}" fill="none" stroke="#243E2E" stroke-width="1.5" opacity="0.35"/>
           <path d="M140 36 L140 308" stroke="#243E2E" stroke-width="1.8" fill="none" opacity="0.22"/>
           <path d="M140 72 Q178 88 215 78" stroke="#243E2E" stroke-width="1" fill="none" opacity="0.18"/>
           <path d="M140 72 Q102 88 65 78" stroke="#243E2E" stroke-width="1" fill="none" opacity="0.18"/>
           <path d="M140 130 Q185 148 220 135" stroke="#243E2E" stroke-width="1" fill="none" opacity="0.18"/>
-          <path d="M140 130 Q95 148 60 135" stroke="#243E2E" stroke-width="1" fill="none" opacity="0.18"/>
+          <path d="M140 130 Q95 148 60 135" stroke="#243E2E" stroke-width="1" fill="none" opacity="0.15"/>
           <path d="M140 190 Q175 205 205 195" stroke="#243E2E" stroke-width="1" fill="none" opacity="0.15"/>
           <path d="M140 190 Q105 205 75 195" stroke="#243E2E" stroke-width="1" fill="none" opacity="0.15"/>
           <path class="leaf-petiole" d="M140 10 L140 0" stroke="#2f5240" stroke-width="5" stroke-linecap="round"/>
@@ -427,9 +416,12 @@
 
   function refreshPlantVine() {
     positionLeaves();
-    requestAnimationFrame(drawPlantVine);
-    setTimeout(drawPlantVine, 150);
-    setTimeout(drawPlantVine, 500);
+    const redraw = () => requestAnimationFrame(drawPlantVine);
+    redraw();
+    setTimeout(redraw, 150);
+    setTimeout(redraw, 500);
+    setTimeout(redraw, 800);
+    syncNavActive();
   }
 
   function scheduleVineDraw() {
@@ -490,32 +482,140 @@
   }
 
   function rootsSvg(baseX, baseY, w, rootsH) {
-    const spread = Math.min(w * 0.44, 200);
-    const deep = rootsH * 0.9;
+    const spread = Math.min(w * 0.5, 240);
+    const deep = rootsH * 1.2;
+    const bx = baseX;
+    const by = baseY;
     let s = '';
 
-    s += `<ellipse cx="${baseX}" cy="${baseY + 6}" rx="${spread + 20}" ry="16" fill="#7a6b52" opacity="0.1"/>`;
-    s += `<ellipse cx="${baseX}" cy="${baseY + 10}" rx="${spread * 0.7}" ry="8" fill="#5c4f3e" opacity="0.08"/>`;
+    s += `
+      <defs>
+        <radialGradient id="soilGrad" cx="50%" cy="15%" r="80%">
+          <stop offset="0%" stop-color="#8a7355" stop-opacity="0.16"/>
+          <stop offset="100%" stop-color="#4a3728" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="${bx}" cy="${by + 6}" rx="${spread * 0.68}" ry="18" fill="url(#soilGrad)"/>
+    `;
 
-    const roots = [
-      { d: `M ${baseX} ${baseY} C ${baseX - spread * 0.15} ${baseY + deep * 0.15}, ${baseX - spread * 0.55} ${baseY + deep * 0.35}, ${baseX - spread} ${baseY + deep * 0.5} C ${baseX - spread * 0.85} ${baseY + deep * 0.7}, ${baseX - spread * 0.5} ${baseY + deep * 0.88}, ${baseX - spread * 0.25} ${baseY + deep}`, w: 7, c: '#4a3f35' },
-      { d: `M ${baseX} ${baseY} C ${baseX + spread * 0.12} ${baseY + deep * 0.12}, ${baseX + spread * 0.5} ${baseY + deep * 0.32}, ${baseX + spread * 0.92} ${baseY + deep * 0.48} C ${baseX + spread * 0.75} ${baseY + deep * 0.68}, ${baseX + spread * 0.4} ${baseY + deep * 0.85}, ${baseX + spread * 0.18} ${baseY + deep * 0.95}`, w: 7, c: '#4a3f35' },
-      { d: `M ${baseX} ${baseY} Q ${baseX - 8} ${baseY + deep * 0.45}, ${baseX - 20} ${baseY + deep * 0.75}`, w: 5, c: '#3a3228' },
-      { d: `M ${baseX} ${baseY} Q ${baseX + 10} ${baseY + deep * 0.42}, ${baseX + 25} ${baseY + deep * 0.72}`, w: 5, c: '#3a3228' },
-      { d: `M ${baseX} ${baseY} C ${baseX + 5} ${baseY + deep * 0.2}, ${baseX - 5} ${baseY + deep * 0.55}, ${baseX} ${baseY + deep * 0.82}`, w: 6, c: '#2f5240' },
-      { d: `M ${baseX - spread * 0.4} ${baseY + deep * 0.38} Q ${baseX - spread * 0.65} ${baseY + deep * 0.55}, ${baseX - spread * 0.55} ${baseY + deep * 0.72}`, w: 3.5, c: '#5a4d42' },
-      { d: `M ${baseX + spread * 0.35} ${baseY + deep * 0.36} Q ${baseX + spread * 0.6} ${baseY + deep * 0.52}, ${baseX + spread * 0.48} ${baseY + deep * 0.7}`, w: 3.5, c: '#5a4d42' },
-      { d: `M ${baseX - spread * 0.15} ${baseY + deep * 0.22} Q ${baseX - spread * 0.35} ${baseY + deep * 0.38}, ${baseX - spread * 0.28} ${baseY + deep * 0.55}`, w: 2.5, c: '#6b5a45' },
-      { d: `M ${baseX + spread * 0.12} ${baseY + deep * 0.2} Q ${baseX + spread * 0.3} ${baseY + deep * 0.36}, ${baseX + spread * 0.22} ${baseY + deep * 0.52}`, w: 2.5, c: '#6b5a45' },
-      { d: `M ${baseX - spread * 0.7} ${baseY + deep * 0.52} Q ${baseX - spread * 0.85} ${baseY + deep * 0.65}, ${baseX - spread * 0.6} ${baseY + deep * 0.78}`, w: 2, c: '#6b5a45' },
-      { d: `M ${baseX + spread * 0.65} ${baseY + deep * 0.5} Q ${baseX + spread * 0.8} ${baseY + deep * 0.63}, ${baseX + spread * 0.55} ${baseY + deep * 0.76}`, w: 2, c: '#6b5a45' },
+    function branchCubic(x1, y1, c1x, c1y, c2x, c2y, x2, y2, width, color, opacity = 0.86) {
+      const d = `M ${x1} ${y1} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x2} ${y2}`;
+      s += `<path d="${d}" fill="none" stroke="#2a1f18" stroke-width="${width + 2}"
+        stroke-linecap="round" opacity="${opacity * 0.14}"/>`;
+      s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}"
+        stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`;
+    }
+
+    function growBranch(x, y, angleDeg, length, width, depth, bend, side) {
+      if (depth <= 0 || length < 5 || width < 0.4) return { x, y, angle: angleDeg };
+
+      const rad = (angleDeg * Math.PI) / 180;
+      const perp = rad + Math.PI / 2;
+      const wave = side * (16 + depth * 4);
+      const sag = length * 0.06;
+
+      const endX = x + Math.cos(rad) * length + Math.cos(perp) * wave * 0.5;
+      const endY = y + Math.sin(rad) * length + sag + Math.sin(perp) * wave * 0.35;
+
+      const c1x = x + Math.cos(rad) * length * 0.2 + Math.cos(perp) * (bend + wave * 1.1);
+      const c1y = y + Math.sin(rad) * length * 0.2 + Math.sin(perp) * (bend + wave) * 0.65 + sag * 0.15;
+      const c2x = x + Math.cos(rad) * length * 0.8 - Math.cos(perp) * wave * 0.7;
+      const c2y = y + Math.sin(rad) * length * 0.8 - Math.sin(perp) * wave * 0.45 + sag * 0.75;
+
+      const colors = ['#3d5c44', '#4a3728', '#5c4636', '#6b5340', '#7a6348', '#8a7355'];
+      const color = colors[Math.min(depth, colors.length - 1)];
+
+      branchCubic(x, y, c1x, c1y, c2x, c2y, endX, endY, width, color, 0.8 + depth * 0.03);
+
+      const endAngle = (Math.atan2(endY - y, endX - x) * 180) / Math.PI;
+      const forkT = 0.52 + side * 0.04;
+      const forkX = x + (endX - x) * forkT + Math.cos(perp) * wave * 0.12;
+      const forkY = y + (endY - y) * forkT + sag * 0.2;
+      const forkSpread = 13 + depth * 3;
+
+      growBranch(
+        forkX,
+        forkY,
+        endAngle - forkSpread - side * 1.5,
+        length * 0.7,
+        width * 0.55,
+        depth - 1,
+        bend * 0.5,
+        -side
+      );
+      growBranch(
+        forkX,
+        forkY,
+        endAngle + forkSpread + side * 1.5,
+        length * 0.68,
+        width * 0.53,
+        depth - 1,
+        bend * 0.5,
+        side
+      );
+
+      if (depth >= 3) {
+        growBranch(
+          forkX,
+          forkY,
+          endAngle + side * 6,
+          length * 0.4,
+          width * 0.36,
+          depth - 2,
+          -bend * 0.35,
+          side * 0.6
+        );
+      }
+
+      return { x: endX, y: endY, angle: endAngle };
+    }
+
+    // Gentle crown — stem meets soil
+    growBranch(bx, by - 3, 93, deep * 0.12, 6.5, 2, 4, 0);
+
+    // Main roots — meandering outward like real fibrous roots
+    const mains = [
+      { angle: 124, len: spread * 0.56, width: 5.8, depth: 4, bend: -22, side: -1 },
+      { angle: 106, len: spread * 0.5, width: 5.2, depth: 4, bend: -12, side: -1 },
+      { angle: 93, len: deep * 0.62, width: 5.2, depth: 4, bend: 5, side: 1 },
+      { angle: 74, len: spread * 0.5, width: 5.2, depth: 4, bend: 12, side: 1 },
+      { angle: 56, len: spread * 0.56, width: 5.8, depth: 4, bend: 22, side: 1 },
     ];
 
-    roots.forEach((r) => {
-      s += `<path d="${r.d}" fill="none" stroke="${r.c}" stroke-width="${r.w}" stroke-linecap="round" opacity="0.85"/>`;
-    });
+    mains.forEach((m) => growBranch(bx, by + 3, m.angle, m.len, m.width, m.depth, m.bend, m.side));
+
+    // Loose side tendrils near crown
+    growBranch(bx - 3, by + 5, 138, spread * 0.38, 3.8, 3, -14, -1);
+    growBranch(bx + 3, by + 5, 42, spread * 0.38, 3.8, 3, 14, 1);
+    growBranch(bx - 6, by + 8, 118, spread * 0.28, 2.8, 2, -8, -1);
+    growBranch(bx + 6, by + 8, 62, spread * 0.28, 2.8, 2, 8, 1);
 
     return s;
+  }
+
+  function leafPetiolePoint(svgLeaf, container) {
+    const pt = svgLeaf.createSVGPoint();
+    pt.x = 140;
+    pt.y = 0;
+    const ctm = svgLeaf.getScreenCTM();
+    if (!ctm) return null;
+    const screen = pt.matrixTransform(ctm);
+    const cr = container.getBoundingClientRect();
+    return {
+      x: screen.x - cr.left,
+      y: screen.y - cr.top,
+    };
+  }
+
+  function domToSvgCoords(container, svg, x, y, viewW, viewH) {
+    const cr = container.getBoundingClientRect();
+    const sr = svg.getBoundingClientRect();
+    const scaleX = sr.width > 0 ? viewW / sr.width : 1;
+    const scaleY = sr.height > 0 ? viewH / sr.height : 1;
+    return {
+      x: (x - (sr.left - cr.left)) * scaleX,
+      y: (y - (sr.top - cr.top)) * scaleY,
+    };
   }
 
   function drawPlantVine() {
@@ -526,8 +626,7 @@
 
     const w = container.offsetWidth;
     const nodesEl = document.getElementById('plant-memories');
-    const rootsZone = document.getElementById('roots-zone');
-    const rootsH = Math.max(rootsZone?.offsetHeight || 0, 200);
+    const rootsH = 200;
     const nodesBottom = nodesEl ? nodesEl.offsetTop + nodesEl.offsetHeight : 0;
 
     let h = container.offsetHeight;
@@ -543,25 +642,29 @@
     const cx = w / 2;
     const sway = Math.min(w * 0.34, 180);
 
+    container.style.minHeight = `${totalH}px`;
+    svg.style.height = `${totalH}px`;
     svg.setAttribute('width', w);
     svg.setAttribute('height', totalH);
     svg.setAttribute('viewBox', `0 0 ${w} ${totalH}`);
 
-    const containerRect = container.getBoundingClientRect();
     const nodeData = [];
 
     nodes.forEach((node, i) => {
-      const anchor = node.querySelector('.node-anchor');
-      const leaf = node.querySelector('.giant-leaf');
-      const anchorRect = anchor.getBoundingClientRect();
-      const leafRect = leaf.getBoundingClientRect();
+      const svgLeaf = node.querySelector('.giant-leaf-svg');
+      if (!svgLeaf) return;
+
+      const petiole = leafPetiolePoint(svgLeaf, container);
+      if (!petiole) return;
+
+      const mapped = domToSvgCoords(container, svg, petiole.x, petiole.y, w, totalH);
       const dir = i % 2 === 0 ? 1 : -1;
       const onLeft = node.classList.contains('plant-node--left');
 
       nodeData.push({
-        y: anchorRect.top - containerRect.top,
-        petioleX: leafRect.left - containerRect.left + leafRect.width / 2,
-        petioleY: leafRect.top - containerRect.top,
+        y: mapped.y,
+        petioleX: mapped.x,
+        petioleY: mapped.y,
         dir,
         onLeft,
         vineX: cx + dir * sway,
@@ -572,7 +675,7 @@
     let prevY = 8;
     const vinePoints = [];
 
-    nodeData.forEach((nd, i) => {
+    nodeData.forEach((nd) => {
       const dir = nd.dir;
       const targetX = nd.vineX;
       const y = nd.y;
@@ -642,21 +745,6 @@
     svgContent += rootsSvg(lastVineX, stemJoinY, w, rootsH);
 
     svg.innerHTML = svgContent;
-  }
-
-  function renderRoots() {
-    const roots = siteData?.roots;
-    if (!roots) return;
-
-    const title = document.getElementById('roots-title');
-    const subtitle = document.getElementById('roots-subtitle');
-    const textEn = document.getElementById('roots-text-en');
-    const textId = document.getElementById('roots-text-id');
-
-    if (title) title.textContent = roots.title_en || 'Before We Began';
-    if (subtitle) subtitle.textContent = roots.title_id || 'Sebelum Kita Mulai';
-    if (textEn) textEn.textContent = roots.text_en || '';
-    if (textId) textId.textContent = roots.text_id || '';
   }
 
   // --- Messages (FormSubmit) ---
@@ -801,28 +889,87 @@
     );
   }
 
-  // --- Nav highlight ---
+  // --- Nav ---
   function initNav() {
     const links = document.querySelectorAll('.nav-link');
-    const sections = ['hero', 'plant', 'messages'];
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            links.forEach((link) => {
-              link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`);
-            });
-          }
+    function navOffset() {
+      const nav = document.getElementById('site-nav');
+      return (nav?.offsetHeight || 56) + 20;
+    }
+
+    function sectionPageTop(section) {
+      return section.getBoundingClientRect().top + window.scrollY;
+    }
+
+    function setActive(id) {
+      links.forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+      });
+    }
+
+    function updateActive() {
+      const hero = document.getElementById('hero');
+      const plant = document.getElementById('plant');
+      const messages = document.getElementById('messages');
+      if (!hero || !plant || !messages) return;
+
+      const line = navOffset() + 12;
+      const scrollBottom = window.scrollY + window.innerHeight;
+      const pageBottom = document.documentElement.scrollHeight;
+      const messagesRect = messages.getBoundingClientRect();
+      const plantRect = plant.getBoundingClientRect();
+      const messagesPageTop = messagesRect.top + window.scrollY;
+
+      const atPageBottom = scrollBottom >= pageBottom - 20;
+      const scrolledIntoMessages = scrollBottom > messagesPageTop + 100;
+      const messagesOnScreen =
+        messagesRect.bottom > line && messagesRect.top < window.innerHeight * 0.9;
+
+      if (atPageBottom || scrolledIntoMessages || messagesOnScreen) {
+        setActive('messages');
+      } else if (plantRect.top <= line) {
+        setActive('plant');
+      } else {
+        setActive('hero');
+      }
+    }
+
+    function scrollToSection(id) {
+      if (id === 'hero') {
+        window.scrollTo({
+          top: 0,
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
         });
-      },
-      { threshold: 0.4 }
-    );
+      } else {
+        const target = document.getElementById(id);
+        if (!target) return;
+        const top = sectionPageTop(target) - navOffset();
+        window.scrollTo({
+          top: Math.max(0, top),
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
+      }
 
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
+      setActive(id);
+      if (!prefersReducedMotion) {
+        setTimeout(updateActive, 450);
+        setTimeout(updateActive, 950);
+      }
+    }
+
+    links.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = link.getAttribute('href')?.slice(1);
+        if (id) scrollToSection(id);
+      });
     });
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    window.addEventListener('resize', debounce(updateActive, 150));
+    syncNavActive = updateActive;
+    updateActive();
   }
 
   // --- Utils ---
