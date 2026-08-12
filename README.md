@@ -59,10 +59,9 @@ Each memory becomes a branch on the growing plant. Scroll down to walk back thro
 
 ## Site Flow
 
-1. **Tap the envelope** — wax seal with RisFiz
-2. **Hero** — RisFiz, days together, Guwahati ↔ Bontang
-3. **Our Plant** — scroll down through memories (newest → oldest)
-4. **Messages** — green box (Fiz → Ris), yellow box (Ris → Fiz)
+1. **Hero** — RisFiz, days together, Guwahati ↔ Bontang
+2. **Our Plant** — scroll down through memories (newest → oldest)
+3. **Messages** — green box (Fiz → Ris), yellow box (Ris → Fiz)
 
 ## File Structure
 

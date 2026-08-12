@@ -256,42 +256,6 @@
     }, { passive: true });
   }
 
-  // --- Envelope ---
-  function initEnvelope() {
-    const screen = document.getElementById('envelope-screen');
-    const envelope = document.getElementById('envelope');
-    const main = document.getElementById('main-content');
-    const nav = document.getElementById('site-nav');
-    let opened = false;
-
-    function openEnvelope() {
-      if (opened) return;
-      opened = true;
-      envelope.classList.add('opened');
-
-      setTimeout(() => {
-        screen.classList.add('opening');
-        main.classList.remove('hidden');
-        nav.classList.remove('hidden');
-
-        setTimeout(() => {
-          screen.style.display = 'none';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          refreshPlantVine();
-          syncNavActive();
-        }, 650);
-      }, 420);
-    }
-
-    envelope.addEventListener('click', openEnvelope);
-    envelope.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        openEnvelope();
-      }
-    });
-  }
-
   // --- Scroll reveal ---
   function initReveal() {
     const observer = new IntersectionObserver(
@@ -953,7 +917,6 @@
   // --- Init ---
   document.addEventListener('DOMContentLoaded', () => {
     initBgLeaves();
-    initEnvelope();
     initReveal();
     loadData();
     initParallax();
